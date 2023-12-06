@@ -3,38 +3,8 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-let mongo = {
-  // Setting the connection string will only give access to that database
-  // to see more databases you need to set mongodb.admin to true or add databases to the mongodb.auth list
-  // It is RECOMMENDED to use connectionString instead of individual params, other options will be removed later.
-  // More info here: https://docs.mongodb.com/manual/reference/connection-string/
-  connectionString: process.env.ME_CONFIG_MONGODB_SERVER ? '' : process.env.ME_CONFIG_MONGODB_URL,
-  host: '127.0.0.1',
-  port: '27017',
-  dbName: '',
-  username: '',
-  password: '',
-};
-
-// Accessing Bluemix variable to get MongoDB info
-if (process.env.VCAP_SERVICES) {
-  const dbLabel = 'mongodb-2.4';
-  const env = JSON.parse(process.env.VCAP_SERVICES);
-  if (env[dbLabel]) {
-    mongo = env[dbLabel][0].credentials;
-  }
-}
-
-const basicAuth = 'ME_CONFIG_BASICAUTH';
-const basicAuthUsername = 'ME_CONFIG_BASICAUTH_USERNAME';
-const basicAuthPassword = 'ME_CONFIG_BASICAUTH_PASSWORD';
-const adminUsername = 'ME_CONFIG_MONGODB_ADMINUSERNAME';
-const adminPassword = 'ME_CONFIG_MONGODB_ADMINPASSWORD';
-const dbAuthUsername = 'ME_CONFIG_MONGODB_AUTH_USERNAME';
-const dbAuthPassword = 'ME_CONFIG_MONGODB_AUTH_PASSWORD';
-
 function getFile(filePath) {
-  if (typeof filePath !== 'undefined' && filePath) {
+  if (filePath !== undefined && filePath) {
     try {
       if (fs.existsSync(filePath)) {
         return fs.readFileSync(filePath);
@@ -58,43 +28,27 @@ function getFileEnv(envVariable) {
   return origVar;
 }
 
-const meConfigMongodbServer = process.env.ME_CONFIG_MONGODB_SERVER
-  ? process.env.ME_CONFIG_MONGODB_SERVER.split(',')
-  : false;
+let mongo = {
+  // Setting the connection string will only give access to that database
+  // to see more databases you need to set mongodb.admin to true
+  // As recommended, a connection String is used instead of the individual params.
+  // More info here: https://docs.mongodb.com/manual/reference/connection-string/
+  connectionString: getFileEnv('ME_CONFIG_MONGODB_URL'),
+  ssl: false,
+};
 
-function getConnectionStringFromInlineParams() {
-  const infos = {
-    server: (
-      meConfigMongodbServer.length > 1 ? meConfigMongodbServer : meConfigMongodbServer[0]
-    ) ||  mongo.host || process.env.ME_CONFIG_MONGODB_SERVER || '127.0.0.1',
-    port: mongo.port || process.env.ME_CONFIG_MONGODB_PORT || '27017',
-    dbName: mongo.dbName,
-    username: mongo.username,
-    password: mongo.password,
-  };
-  const login = infos.username ? `${infos.username}:${infos.password}@` : '';
-  return `mongodb://${login}${infos.server}:${infos.port}/${infos.dbName}`;
+// Accessing Bluemix variable to get MongoDB info
+if (process.env.VCAP_SERVICES) {
+  const dbLabel = 'mongodb-2.4';
+  const env = JSON.parse(process.env.VCAP_SERVICES);
+  if (env[dbLabel]) {
+    mongo = env[dbLabel][0].credentials;
+  }
 }
 
-function getConnectionStringFromEnvVariables() {
-  const infos = {
-    // server: mongodb hostname or IP address
-    // for replica set, use array of string instead
-    server: (
-      meConfigMongodbServer.length > 1 ? meConfigMongodbServer : meConfigMongodbServer[0]
-    ) || mongo.host,
-    port: process.env.ME_CONFIG_MONGODB_PORT || mongo.port,
-    dbName: process.env.ME_CONFIG_MONGODB_AUTH_DATABASE || mongo.dbName,
-
-    // >>>> If you are using an admin mongodb account, or no admin account exists, fill out section below
-    // >>>> Using an admin account allows you to view and edit all databases, and view stats
-    // leave username and password empty if no admin account exists
-    username: getFileEnv(adminUsername) || getFileEnv(dbAuthUsername) || mongo.username,
-    password: getFileEnv(adminPassword) || getFileEnv(dbAuthPassword) || mongo.password,
-  };
-  const login = infos.username ? `${infos.username}:${infos.password}@` : '';
-  return `mongodb://${login}${infos.server}:${infos.port}/${infos.dbName}`;
-}
+const basicAuth = 'ME_CONFIG_BASICAUTH';
+const basicAuthUsername = 'ME_CONFIG_BASICAUTH_USERNAME';
+const basicAuthPassword = 'ME_CONFIG_BASICAUTH_PASSWORD';
 
 function getBoolean(str, defaultValue = false) {
   return str ? str.toLowerCase() === 'true' : defaultValue;
@@ -102,10 +56,12 @@ function getBoolean(str, defaultValue = false) {
 
 export default {
   mongodb: {
-    mongo,
-    getConnectionStringFromInlineParams,
+    // set allowDiskUse to true to remove the limit of 100 MB of RAM on each aggregation pipeline stage
+    // https://www.mongodb.com/docs/v5.0/core/aggregation-pipeline-limits/#memory-restrictions
+    allowDiskUse: getBoolean(process.env.ME_CONFIG_MONGODB_ALLOW_DISK_USE, false),
+
     // if a connection string options such as server/port/etc are ignored
-    connectionString: mongo.connectionString || getConnectionStringFromEnvVariables(),
+    connectionString: mongo.connectionString,
 
     /** @type {import('mongodb').MongoClientOptions} */
     connectionOptions: {
@@ -168,7 +124,7 @@ export default {
     console: true,
 
     // documentsPerPage: how many documents you want to see at once in collection view
-    documentsPerPage: 10,
+    documentsPerPage: process.env.ME_CONFIG_DOCUMENTS_PER_PAGE || 10,
 
     // editorTheme: Name of the theme you want to use for displaying documents
     // See http://codemirror.net/demo/theme.html for all examples
@@ -223,17 +179,4 @@ export default {
     // noDelete: if noDelete is set to true, we won't show delete buttons
     noDelete: getBoolean(process.env.ME_CONFIG_OPTIONS_NO_DELETE, false),
   },
-
-  // Specify the default keyname that should be picked from a document to display in collections list.
-  // Keynames can be specified for every database and collection.
-  // If no keyname is specified, it defaults to '_id', which is a mandatory field.
-  // For Example :
-  // defaultKeyNames{
-  //   "world_db":{  //Database Name
-  //     "continent":"cont_name", // collection:field
-  //     "country":"country_name",
-  //     "city":"name"
-  //   }
-  // }
-  defaultKeyNames: {},
 };

@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/mongo-express.svg)](https://www.npmjs.com/package/mongo-express) [![npm](https://img.shields.io/npm/dm/mongo-express.svg)](https://www.npmjs.com/package/mongo-express) [![GitHub stars](https://img.shields.io/github/stars/mongo-express/mongo-express.svg)](https://github.com/mongo-express/mongo-express/stargazers) [![Known Vulnerabilities](https://snyk.io/test/npm/name/badge.svg)](https://snyk.io/test/npm/mongo-express)
 [![Build Status](https://github.com/mongo-express/mongo-express/actions/workflows/standard-ci.yml/badge.svg?branch=master)](https://github.com/mongo-express/mongo-express/actions/workflows/standard-ci.yml)
 
-Web-based MongoDB admin interface written with Node.js, Express and Bootstrap3
+A web-based MongoDB admin interface written with Node.js, Express, and Bootstrap3
 
 ## Features
 
@@ -11,7 +11,7 @@ Web-based MongoDB admin interface written with Node.js, Express and Bootstrap3
 - View/add/delete databases
 - View/add/rename/delete collections
 - View/add/update/delete documents
-- Preview audio/video/image assets inline in collection view
+- Preview audio/video/image assets inline in the collection view
 - Nested and/or large objects are collapsible for easy overview
 - Async on-demand loading of big document properties (>100KB default) to keep collection view fast
 - GridFS support - add/get/delete incredibly large files
@@ -30,12 +30,12 @@ Web-based MongoDB admin interface written with Node.js, Express and Bootstrap3
 | <img src="http://i.imgur.com/XiYhblA.png" title="Home Page showing databases"> | <img src="http://i.imgur.com/XWcIgY1.png" title="Viewing collections & buckets in a database" /> | <img src="https://imgur.com/UmGSr3x.png" title="Viewing documents in a collection" /> | <img src="https://imgur.com/lL38abn.png" title="Editing a document" /> |
 
 These screenshots are from version 0.30.40
-View album for more screenshots: (server status, database views etc..)
+View the album for more screenshots: (server status, database views, etc..)
 [https://imgur.com/a/9vHsF](https://imgur.com/a/9vHsF)
 
 ## Development
 
-For test or develop with the latest version you can install using this git repository:
+To test or develop with the latest version you can install using this git repository:
 
     npm i mongo-express@git+https://github.com/mongo-express/mongo-express.git#master
 
@@ -76,17 +76,26 @@ Fill in your MongoDB connection details and any other options you want to change
 
     cd YOUR_PATH/node_modules/mongo-express/ && node app.js
 
-If you installed it globally, you can immediately start mongo-express like this:
+or if you installed it globally, you can immediately start mongo-express like this:
 
-    mongo-express --url mongodb://127.0.0.1:27017
+    mongo-express
 
-Or if you want to use it as an administrator:
+You can add some configuration options. Example:
 
-    mongo-express --admin --url mongodb://127.0.0.1:27017
+    node app.js --url mongodb://127.0.0.1:27017
 
-For help on configuration options:
+or:
 
-    mongo-express --help
+    mongo-express --URL mongodb://127.0.0.1:27017
+
+Configuration options:
+Option | Short | Description
+| - | - | -
+`--version` | `-V` | output the version number
+`--url <url>` | `-U <url>` | connection string url (`<url>` example: `mongodb://127.0.0.1:27017`)
+`--admin` | `-a` | enable authentication as admin
+`--port <port>` | `-p <port>` | listen on specified port (default `<port>` is `8081`)
+`--help` | `-h` | display help for command options
 
 ## Usage (Express 4 middleware)
 
@@ -99,7 +108,7 @@ For help on configuration options:
 
 ## Usage (Docker)
 
-Make sure you have a running [MongoDB container](https://hub.docker.com/_/mongo/) on a Docker network (`--network some-network` below) with `--name` or `--network-alias` set to `mongo`. Alternatively, set connection string `ME_CONFIG_MONGODB_URL` to the proper connection for your MongoDB container on your Docker network.
+Make sure you have a running [MongoDB container](https://hub.docker.com/_/mongo/) on a Docker network (`--network some-network` below) with `--name` or `--network-alias` set to `mongo`. Alternatively, set the connection string `ME_CONFIG_MONGODB_URL` to the proper connection for your MongoDB container on your Docker network.
 
 **Use [the Docker Hub image](https://hub.docker.com/_/mongo-express/):**
 
@@ -118,40 +127,38 @@ $ docker run -it --rm -p 8081:8081 --network some-network mongo-express
 
 You can use the following [environment variables](https://docs.docker.com/reference/run/#env-environment-variables) to modify the container's configuration:
 
-    Name                              | Default         | Description
-    ----------------------------------|-----------------|------------
-    `ME_CONFIG_MONGODB_URL`           | `mongodb://admin:pass@localhost:27017/db?ssl=false`
-    `ME_CONFIG_MONGODB_ENABLE_ADMIN`  | `false`         | Enable administrator access. Send strings: `"true"` or `"false"`.
-    `ME_CONFIG_MONGODB_AUTH_DATABASE` | `db`            | Database name (only needed if `ENABLE_ADMIN` is `"false"`).
-    `ME_CONFIG_MONGODB_AUTH_USERNAME` | `admin`         | Database username (only needed if `ENABLE_ADMIN` is `"false"`).
-    `ME_CONFIG_MONGODB_AUTH_PASSWORD` | `pass`          | Database password (only needed if `ENABLE_ADMIN` is `"false"`).
-    `ME_CONFIG_SITE_BASEURL`          | `/`             | Set the express baseUrl to ease mounting at a subdirectory. Remember to include a leading and trailing slash.
-    `ME_CONFIG_HEALTH_CHECK_PATH`     | `/status`       | Set the mongo express healthcheck path. Remember to add the forward slash at the start.
-    `ME_CONFIG_SITE_COOKIESECRET`     | `cookiesecret`  | String used by [cookie-parser middleware](https://www.npmjs.com/package/cookie-parser) to sign cookies.
-    `ME_CONFIG_SITE_SESSIONSECRET`    | `sessionsecret` | String used to sign the session ID cookie by [express-session middleware](https://www.npmjs.com/package/express-session).
-    `ME_CONFIG_BASICAUTH`             | `false`         | Enable Basic Authentication. Send strings: `"true"` or `"false"`.
-    `ME_CONFIG_BASICAUTH_USERNAME`    | ``              | mongo-express web login name. Sending an empty string will disable basic authentication.
-    `ME_CONFIG_BASICAUTH_PASSWORD`    | ``              | mongo-express web login password.
-    `ME_CONFIG_REQUEST_SIZE`          | `100kb`         | Used to configure maximum mongo update payload size. CRUD operations above this size will fail due to restrictions in [body-parser](https://www.npmjs.com/package/body-parser).
-    `ME_CONFIG_OPTIONS_EDITORTHEME`   | `rubyblue`      | Web editor color theme, [more here](http://codemirror.net/demo/theme.html).
-    `ME_CONFIG_OPTIONS_READONLY`      | `false`         | if readOnly is true, components of writing are not visible.
-    `ME_CONFIG_OPTIONS_FULLWIDTH_LAYOUT`    | `false`   | if set to true an alternative page layout is used utilizing full window width.
-    `ME_CONFIG_OPTIONS_PERSIST_EDIT_MODE`   | `false`   | if set to true, remain on same page after clicked on Save button
-    `ME_CONFIG_OPTIONS_NO_DELETE`      | `false`        | if noDelete is true, components of deleting are not visible.
-    `ME_CONFIG_SITE_SSL_ENABLED`      | `false`         | Enable SSL.
-    `ME_CONFIG_MONGODB_SSLVALIDATE`   | `true`          | Validate mongod server certificate against CA
-    `ME_CONFIG_SITE_SSL_CRT_PATH`     | ` `             | SSL certificate file.
-    `ME_CONFIG_SITE_SSL_KEY_PATH`     | ` `             | SSL key file.
-    `ME_CONFIG_SITE_GRIDFS_ENABLED`   | `false`         | Enable gridFS to manage uploaded files.
-    `VCAP_APP_HOST`                   | `localhost`     | address that mongo-express will listen on for incoming connections.
-    `PORT`                            | `8081`          | port that mongo-express will run on.
-    `ME_CONFIG_MONGODB_CA_FILE`       | ``              | CA certificate File
-    `ME_CONFIG_BASICAUTH_USERNAME_FILE`     | ``        | File version of ME_CONFIG_BASICAUTH_USERNAME
-    `ME_CONFIG_BASICAUTH_PASSWORD_FILE`     | ``        | File version of ME_CONFIG_BASICAUTH_PASSWORD
-    `ME_CONFIG_MONGODB_ADMINUSERNAME_FILE`  | ``        | File version of ME_CONFIG_MONGODB_ADMINUSERNAME
-    `ME_CONFIG_MONGODB_ADMINPASSWORD_FILE`  | ``        | File version of ME_CONFIG_MONGODB_ADMINPASSWORD
-    `ME_CONFIG_MONGODB_AUTH_USERNAME_FILE`  | ``        | File version of ME_CONFIG_MONGODB_AUTH_USERNAME
-    `ME_CONFIG_MONGODB_AUTH_PASSWORD_FILE`  | ``        | File version of ME_CONFIG_MONGODB_AUTH_PASSWORD
+Name | Default | Description
+| - | - | - |
+`ME_CONFIG_MONGODB_URL` | `mongodb://admin:pass@localhost:27017/db?ssl=false`
+`ME_CONFIG_MONGODB_ENABLE_ADMIN` | `false` | Enable administrator access. Send strings: `"true"` or `"false"`.
+`ME_CONFIG_MONGODB_AUTH_USERNAME` | `admin` | Database username (only needed if `ENABLE_ADMIN` is `"false"`).
+`ME_CONFIG_MONGODB_AUTH_PASSWORD` | `pass` | Database password (only needed if `ENABLE_ADMIN` is `"false"`).
+`ME_CONFIG_MONGODB_ALLOW_DISK_USE` | `false` | Remove the limit of 100 MB of RAM on each aggregation pipeline stage.
+`ME_CONFIG_SITE_BASEURL` | `/` | Set the express baseUrl to ease mounting at a subdirectory. Remember to include leading and trailing slash.
+`ME_CONFIG_HEALTH_CHECK_PATH` | `/status` | Set the mongo express healthcheck path. Remember to add the forward slash at the start.
+`ME_CONFIG_SITE_COOKIESECRET` | `cookiesecret` | String used by [cookie-parser middleware](https://www.npmjs.com/package/cookie-parser) to sign cookies.
+`ME_CONFIG_SITE_SESSIONSECRET` | `sessionsecret` | String used to sign the session ID cookie by [express-session middleware](https://www.npmjs.com/package/express-session).
+`ME_CONFIG_BASICAUTH` | `false` | Enable Basic Authentication. Send strings: `"true"` or `"false"`.
+`ME_CONFIG_BASICAUTH_USERNAME` | `` | mongo-express web login name. Sending an empty string will disable basic authentication.
+`ME_CONFIG_BASICAUTH_PASSWORD` | `` | mongo-express web login password.
+`ME_CONFIG_REQUEST_SIZE` | `100kb` | Used to configure maximum Mongo update payload size. CRUD operations above this size will fail due to restrictions in [body-parser](https://www.npmjs.com/package/body-parser).
+`ME_CONFIG_OPTIONS_EDITORTHEME` | `rubyblue` | Web editor color theme, [more here](http://codemirror.net/demo/theme.html).
+`ME_CONFIG_OPTIONS_READONLY` | `false` | if readOnly is true, components of writing are not visible.
+`ME_CONFIG_OPTIONS_FULLWIDTH_LAYOUT` | `false` | If set to true an alternative page layout is used utilizing full window width.
+`ME_CONFIG_OPTIONS_PERSIST_EDIT_MODE` | `false` | If set to true, remain on the same page after clicking on the Save button
+`ME_CONFIG_OPTIONS_NO_DELETE` | `false` | If noDelete is true, components of deleting are not visible.
+`ME_CONFIG_SITE_SSL_ENABLED` | `false` | Enable SSL.
+`ME_CONFIG_MONGODB_SSLVALIDATE` | `true` | Validate mongod server certificate against CA
+`ME_CONFIG_SITE_SSL_CRT_PATH` | ` ` | SSL certificate file.
+`ME_CONFIG_SITE_SSL_KEY_PATH` | ` ` | SSL key file.
+`ME_CONFIG_SITE_GRIDFS_ENABLED` | `false` | Enable gridFS to manage uploaded files.
+`VCAP_APP_HOST` | `localhost` | address that mongo-express will listen on for incoming connections.
+`PORT` | `8081` | port that mongo-express will run on.
+`ME_CONFIG_MONGODB_CA_FILE` | `` | CA certificate File
+`ME_CONFIG_MONGODB_URL_FILE` | `` | File version of ME_CONFIG_MONGODB_URL
+`ME_CONFIG_BASICAUTH_USERNAME_FILE` | `` | File version of ME_CONFIG_BASICAUTH_USERNAME
+`ME_CONFIG_BASICAUTH_PASSWORD_FILE` | `` | File version of ME_CONFIG_BASICAUTH_PASSWORD
+`ME_CONFIG_DOCUMENTS_PER_PAGE` | `10` | How many documents you want to see at once in collection view
 
 **Example:**
 
@@ -169,6 +176,17 @@ This example links to a container name typical of `docker-compose`, changes the 
 **To use:**
 
 The default port exposed from the container is 8081, so visit `http://localhost:8081` or whatever URL/port you entered into your config (if running standalone) or whatever `config.site.baseUrl` (if mounting as a middleware).
+
+### Using Docker Extensions:
+
+**Pre-requisite:**
+
+- Docker Desktop 4.15
+
+**Usage:**
+
+By using Mongo Express Docker Extension, it's easy to setup Mongo Express on Docker Desktop with [just one click](https://open.docker.com/extensions/marketplace?extensionId=ajeetraina/mongodb-express-docker-extension&tag=1.0).
+
 
 ## Usage (Bluemix)
 
@@ -205,7 +223,7 @@ Pull Requests are always welcome! <3
 
 ## Limitations
 
-- Documents must have `document._id` property to be edited
+- Documents must have the `document._id` property to be edited
 - Binary BSON data type not tested
 
 ## E2E Testing
@@ -213,7 +231,7 @@ Pull Requests are always welcome! <3
     We are currently trying to use Cypress, to open cypress use the command `cypress open`
     To instrument the code to allow the E2E coverage to run, please run this command: `yarn nyc instrument --compact=false lib instrumented`
 
-## Not tested
+## Not Tested
 
 - Binary/BinData
 
@@ -246,7 +264,7 @@ Use Object ID with the given 24-digit hexadecimal string.
 
     ISODate()
 
-Creates a new ISODate object with current time.
+Creates a new ISODate object with the current time.
 
 `new Date()` can also be used (note the `new` keyword there).
 

@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import https from 'node:https';
 import clc from 'cli-color';
-import commander from 'commander';
+import { program } from 'commander';
 import csrf from 'csurf';
 import express from 'express';
 import middleware from './lib/middleware.js';
@@ -86,62 +86,28 @@ async function bootstrap(config) {
 const config = await loadConfig();
 
 if (config.options.console === true) {
-  console.log('Welcome to mongo-express');
+  console.log(`Welcome to mongo-express ${pkg.version}`);
   console.log('------------------------');
   console.log('\n');
 }
 
-commander
+program
   .version(pkg.version)
   .option('-U, --url <url>', 'connection string url')
-  .option('-H, --host <host>', 'hostname or address of the db(deprecated)')
-  .option('-P, --dbport <host>', 'port of the db(deprecated)')
-  .option('-u, --username <username>', 'username for authentication(deprecated)')
-  .option('-p, --password <password>', 'password for authentication(deprecated)')
   .option('-a, --admin', 'enable authentication as admin')
-  .option('-d, --database <database>', 'authenticate to database')
-  .option('--port <port>', 'listen on specified port')
+  .option('-p, --port <port>', 'listen on specified port')
   .parse(process.argv);
 
-if (commander.username && commander.password) {
-  config.mongodb.admin = !!commander.admin;
-  if (commander.admin) {
-    config.mongodb.adminUsername = commander.username;
-    config.mongodb.adminPassword = commander.password;
-  } else {
-    const user = {
-      database: commander.database,
-      username: commander.username,
-      password: commander.password,
-      host: commander.host,
-      port: commander.dbport,
-    };
-    for (const key in user) {
-      if (!user[key]) {
-        commander.help();
-      }
-    }
-    config.mongodb.mongo.username = user.username;
-    config.mongodb.mongo.password = user.password;
-    config.mongodb.mongo.dbName = user.database;
-    config.mongodb.mongo.host = user.host;
-    config.mongodb.mongo.port = user.port;
-    config.mongodb.connectionString = config.mongodb.getConnectionStringFromInlineParams();
-  }
-  config.useBasicAuth = false;
-}
+const options = program.opts();
 
-if (commander.url) {
-  config.mongodb.connectionString = commander.url;
-  if (commander.admin) {
+if (options.url) {
+  config.mongodb.connectionString = options.url;
+  if (options.admin) {
     config.mongodb.admin = true;
   }
 }
 
-config.mongodb.server = commander.host || config.mongodb.server;
-config.mongodb.port = commander.dbport || config.mongodb.port;
-
-config.site.port = commander.port || config.site.port;
+config.site.port = options.port || config.site.port;
 
 if (!config.site.baseUrl) {
   console.error('Please specify a baseUrl in your config. Using "/" for now.');
